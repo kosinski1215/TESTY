@@ -5,32 +5,37 @@ public class Kom2 {
 
 		
 		Zarzadca z = new Zarzadca();
-
-		z.addTask(1,new Xabc());
+		//jedno nowe zadanie
+		z.addTask(1,new Zadanie()); 
+		//sekunda przerwy
 		Thread.sleep(1000);
-		z.addTask(10,new Xabc());
-		z.zamknijPo();
+		//10 nowych zadañ
+		z.addTask(10,new Zadanie());
+		
+		z.zamknij();
 	}
 	
 
 	
 }
 
-class Xabc implements Runnable {
-	static Integer licznik = 0;
+class Zadanie implements Runnable { // Zadanie wymieniane w w¹tkach
+	public static Object lock = new Object();
+	static int licznik = 0;
 	public void run() {
-		synchronized(licznik){
+		synchronized(lock){
 		licznik++;
 		System.out.println("Zadanie numer " + licznik + " Wykonano");
 		}
 	}
 }
 
+
 class Watek extends Thread {
 	Zarzadca zarzadca;
 	public Watek(Zarzadca zarzadca){
 		this.zarzadca=zarzadca;
-		this.setDaemon(true);
+		//this.setDaemon(true); --- za wczeœnie zamyka³o w¹tki
 	}
 	
 	public void run() {
@@ -39,6 +44,8 @@ class Watek extends Thread {
 		}
 	}
 }
+
+
 class Zarzadca{
 	public boolean isRunning;
 	LinkedList<Watek> watki;
@@ -80,6 +87,7 @@ class Zarzadca{
 		}
 	}
 	public void zamknij(){
+		while(!zadania.isEmpty()){} 
 		isRunning=false;
 		synchronized(zadania){
 			zadania.notifyAll();
@@ -91,10 +99,5 @@ class Zarzadca{
 			catch (InterruptedException e) {}
 		}
 	}
-	public void zamknijPo(){
-		if(zadania.isEmpty()){
-			zamknij();
-		}
-		
-	}
+
 }
